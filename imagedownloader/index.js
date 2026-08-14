@@ -253,60 +253,64 @@ function getFileName(url, index) {
   // 메소드 생성.
   const urlPath = new URL(url).pathname; // 입력받은 url의 pathname을 저장.
   const ext = path.extname(urlPath) || ".jpg"; // 확장자명을 저장. 확장자명이 없을시 빈 문자열 반환(false 취급), 논리연산자 (or)에 의해, .jpg를 반환.
-  const base = path.basename(urlPath, ext) || `image-${index + 1}`; // 빈 문자열을 방어하자는 의도같지만... 애시당초 잘못된 값을 넣어
-  return `${base}${ext}`;
+  const base = path.basename(urlPath, ext) || `image-${index + 1}`; // 빈 문자열을 방어하자는 의도로 추정. 순수 사이트 주소만 가진 페이지는 오류가 나니까.
+  return `${base}${ext}`; // 명칭+확장자
 }
 
 function downloadImage(url, filePath) {
+  // 비동기 함수의 리턴 반환
   return new Promise((resolve, reject) => {
-    const client = url.startsWith("https") ? https : http; // https인지 체크.
+    const client = url.startsWith("https") ? https : http; // https인지 체크 후, https 모듈 혹은 http 모듈
 
-    client
+    client // node.js를 활용한 get 코드
       .get(url, (response) => {
         if (
           response.statusCode >= 300 &&
           response.statusCode < 400 &&
-          response.headers.location
+          response.headers.location // 300대 오류가 날 경우 + location (리다이렉션할 주소)을 응답에 같이 보내줬을 경우
         ) {
           downloadImage(response.headers.location, filePath)
             .then(resolve)
-            .catch(reject);
+            .catch(reject); // 재귀함수 형식으로 리다이렉션. await를 쓰지 않으므로, 비동기 리다이렉션시 재귀함수 형식이 필요하다.
           return;
         }
         if (response.statusCode !== 200) {
-          reject(new Error(`Status ${response.statusCode}`));
+          // 200대 코드(요청성공)이 아닐 경우.
+          reject(new Error(`Status ${response.statusCode}`)); // reject 객체를 반환. reject 객체는 아래 코드에서 실패결과를 출력하는데 쓰임.
           return;
         }
-        const fileStream = fs.createWriteStream(filePath);
-        response.pipe(fileStream);
+        const fileStream = fs.createWriteStream(filePath); // 파일에 데이터를 쓸 통로 열기. 통로는 경로와 파일명이 함께 지정되어 있다. downloadAll 메소드 참조.
+        response.pipe(fileStream); // 웹에서 다운로드 중인 파일을 실시간으로 저장하는 코드.
         fileStream.on("finish", () => {
-          fileStream.close();
-          console.log(`✅ ${filePath}`);
-          resolve();
+          fileStream.close(); // 끝나면, 파일스트림 닫기
+          console.log(`✅ ${filePath}`); // 성공했다고 콘솔에 띄움.
+          resolve(); // resolve. 작업 완료
         });
         fileStream.on("error", (err) => {
-          fs.unlink(filePath, () => {});
-          reject(err);
+          fs.unlink(filePath, () => {}); // 에러뜰 경우 불완전 파일. 그러므로 경로상 파일을 삭제.
+          reject(err); // error 객체가 매개변수로 쓰이는 reject 호출.
         });
       })
-      .on("error", reject);
+      .on("error", reject); // 요청 중 에러시, reject 호출
   });
 }
 
 async function downloadAll() {
-  console.log(`📥 Downloading ${imageUrls.length} images...\n`);
+  console.log(`📥 Downloading ${imageUrls.length} images...\n`); // 몇 개 이미지가 다운로드 예정인지 콘솔창에 표시.
 
   const results = await Promise.allSettled(
+    // allSettled. 모든 비동기 함수를 리턴하면 결과값을 반환.
     imageUrls.map((url, i) => {
-      const fileName = getFileName(url, i);
-      const filePath = path.join(downloadDir, fileName);
-      return downloadImage(url, filePath);
+      // url들은 배열형태. map으로 모두 요청한다.
+      const fileName = getFileName(url, i); // 파일이름을 url에서 받아온다.
+      const filePath = path.join(downloadDir, fileName); // 경로와 파일명을 합친다.
+      return downloadImage(url, filePath); // url과 파일명을 함께 보낸다.
     }),
   );
 
-  const success = results.filter((r) => r.status === "fulfilled").length;
-  const failed = results.filter((r) => r.status === "rejected").length;
+  const success = results.filter((r) => r.status === "fulfilled").length; // 이행완료된 프로미스 결과 객체들 배열 갯수
+  const failed = results.filter((r) => r.status === "rejected").length; // 실패한(reject 호출됨) 프로미스 결과 객체들 배열 갯수
   console.log(`\n🎉 Done! ${success} succeeded, ${failed} failed.`);
 }
 
-downloadAll();
+downloadAll(); // 메소드를 실행함으로써 다운로드 작업실시.
