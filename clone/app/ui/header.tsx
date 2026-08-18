@@ -1,9 +1,11 @@
+import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
+import clsx from "clsx";
 import Image from "next/image";
 import Link from "next/link";
 
 export const Header = () => {
   return (
-    <header className="flex justify-around mx-auto">
+    <header className="flex justify-around mx-auto max-w-[1550px]">
       <Link
         href={"/"}
         className="w-18 aspect-square relative block m-6"
@@ -11,7 +13,7 @@ export const Header = () => {
       >
         <Image src={"/logo.png"} alt="logo" fill></Image>
       </Link>
-      <div className="mt-2">
+      <div className="mt-2 h-full flex flex-col">
         <div className="flex justify-end">
           <ul className="flex text-sm">
             {[
@@ -19,27 +21,41 @@ export const Header = () => {
               "My Starbucks",
               "Customer Service & Ideas",
               "Find a Store",
-            ].map((label) => (
-              <li className="flex items-center" key={label}>
+            ].map((label, idx) => (
+              <li
+                className={clsx(
+                  "flex items-center relative after:content-[''] after:block after:absolute after:top-1/2 after:right-0 after:border-r after:border-gray-200 after:h-3 after:-translate-y-1/2",
+                  idx == 3 && "after:none",
+                )}
+                key={label}
+              >
                 <Link className="block px-4 hover:underline" href={"/"}>
                   {label}
                 </Link>
               </li>
             ))}
             <li>
-              <button className="w-8 aspect-square rounded-sm border border-gray-300 bg-white"></button>
+              <button className="w-8 aspect-square rounded-sm border border-gray-300 bg-white p-1">
+                <MagnifyingGlassIcon strokeWidth={3} />
+              </button>
             </li>
           </ul>
         </div>
-        <div>
+        <div className="mt-4 grow-1">
           <ul className="flex">
-            <li>COFFEE</li>
-            <li>MENU</li>
-            <li>STORE</li>
-            <li>ESG</li>
-            <li>STARBUCKS REWARDS</li>
-            <li>CORPORATE SALES</li>
-            <li>WHAT'S NEW</li>
+            {[
+              "COFFEE",
+              "MENU",
+              "STORE",
+              "ESG",
+              "STARBUCKS REWARDS",
+              "CORPORATE SALES",
+              "WHAT'S NEW",
+            ].map((label) => (
+              <li key={label} className={"pt-2"}>
+                {label}
+              </li>
+            ))}
           </ul>
         </div>
       </div>
