@@ -52,8 +52,14 @@ export const Header = () => {
               "CORPORATE SALES",
               "WHAT'S NEW",
             ].map((label) => (
-              <li key={label} className={"pt-2"}>
-                {label}
+              <li key={label} className={""}>
+                <Link
+                  className="block pt-2 px-4 hover:bg-stone-800 hover:underline hover:text-green-600"
+                  href={"/"}
+                >
+                  {" "}
+                  {label}
+                </Link>
               </li>
             ))}
           </ul>
