@@ -5,13 +5,13 @@ import Link from "next/link";
 
 export const Header = () => {
   return (
-    <header className="flex justify-around mx-auto max-w-[1550px]">
+    <header className="flex justify-around h-30 mx-auto max-w-[1550px]">
       <Link
+        className="h-18 aspect-square relative block m-6"
         href={"/"}
-        className="w-18 aspect-square relative block m-6"
         title="스타벅스 메인페이지"
       >
-        <Image src={"/logo.png"} alt="logo" fill></Image>
+        <Image src={"/logo.png"} className="" alt="logo" fill></Image>
       </Link>
       <div className="mt-2 h-full flex flex-col">
         <div className="flex justify-end">
@@ -42,7 +42,7 @@ export const Header = () => {
           </ul>
         </div>
         <div className="mt-4 grow-1">
-          <ul className="flex">
+          <ul className="flex h-full">
             {[
               "COFFEE",
               "MENU",
@@ -54,10 +54,9 @@ export const Header = () => {
             ].map((label) => (
               <li key={label} className={""}>
                 <Link
-                  className="block pt-2 px-4 hover:bg-stone-800 hover:underline hover:text-green-600"
+                  className="block h-full pt-2 px-4 hover:bg-stone-800 hover:underline hover:text-green-600"
                   href={"/"}
                 >
-                  {" "}
                   {label}
                 </Link>
               </li>
